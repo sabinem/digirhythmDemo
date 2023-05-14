@@ -1,0 +1,15 @@
+Package: digirythmDemo
+Title: Demo of the package digirythm that monitory animal activity
+Version: 0.0.0.9000
+Authors@R: 
+    person("Sabine", "Maennel", , "sabine.maennel@gmail.com", role = c("aut", "cre"))
+Description: The package provides a notebook and a shiny app
+License: `use_mit_license()`
+    license
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+Imports: 
+    here,
+    rsconnect,
+    shiny
