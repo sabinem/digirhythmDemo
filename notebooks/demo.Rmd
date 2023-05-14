@@ -1,0 +1,128 @@
+---
+title: "digiRhythm demo"
+output: html_document
+---
+
+This notebook showcases the use of the 
+[digiRhythm package](https://cran.r-project.org/web/packages/digiRhythm/index.html).
+
+is an R package for the analysis of animal activity during night and day. The package was written by Dr. Roland Nasser and an description of the project can be found at [DigiRhythm](https://www.agroscope.admin.ch/agroscope/en/home/topics/economics-technology/smart-farming/digirhythm.html)
+
+In this package we will explore a sample dataset of this package and showcase the different plots that the pacakge offers.
+
+## Setup
+
+Load the package
+
+```{r, eval=F, message=F, warning=F}
+install.packages("devtools")
+install.packages('digiRhythm', dependencies = T)
+```
+
+## Load the data
+
+Here we are loading an example dataset provided by the package. The package provides promises to fetch the
+data: so for this notebook we will use this promise to avoid downloading the dataset. 
+
+The dataset contains the observations of one animal and tracks it's activity index and steps over time: the observations are recorded evers 15 minutes. 
+
+```{r}
+library(digiRhythm)
+
+# Select an input file containing position recordings over time.
+filename <- here::here('data', '516b_2.csv')
+
+#The columns that we are interested in
+colstoread <- c("Date", "Time", "Motion Index", 'Steps') 
+
+# Reading the activity data from the csv file
+df <- import_raw_activity_data(
+  filename = filename,
+  skipLines = 7,
+  act.cols.names = colstoread,
+  sampling = 15)
+```
+
+## Inspect the data
+The dataset can be inspected by the `is_dgm_friendly` function: it checks whether the observations have the expected attributes and frequencies.
+
+```{r}
+is_dgm_friendly(df, verbose=T)
+```
+
+Metadata such as the time period that was monitored is provided by the function `df_act_info`.
+
+```{r}
+df_act_info(df)
+```
+
+## Visualization
+
+Specific visualizations are also provided, with an option to directly save the figure to a file.
+
+### Activity over time
+
+First, the `actogram` function shows activity along the day for all dates at the same time, as a heatmap. This function allows to specify a column to visualize, a date range to include. When we are satisfied with the figure, we can save it by giving a file path with the `save` option. 
+
+For this animal we can see that the activity is very regular and peeks in the morning and evening.
+
+```{r}
+# Define time range to include in figures
+start <- '2020-04-30'
+end <- '2020-06-14'
+
+p <- actogram(df,
+         activity = 'Motion.Index',
+         activity_alias = 'Motion Index',
+         start = start,
+         end = end,
+         save = NULL)
+
+```
+
+`daily_average_activity` provides an alternative visualization where observation are grouped by the time of day
+the curve shows the mean activity on a given time of the day. The function allows for chosing a time period for 
+the grouping of the observations: it looks at the average activity during a day in a given time interval.
+
+Again we can see that in the chosen time interval the activity peeks in the morning and in the evening.
+
+```{r}
+p <- daily_average_activity(df,
+         activity = 'Motion.Index',
+         activity_alias = 'Motion Index',
+         start = start,
+         end = end,
+         save = NULL)
+
+```
+
+All plotting functions in digiRhythm return ggplot2 objects. 
+We can therefore customize the way we display them: here below we are adding a title and print out the start and end date of the observation that were grouped and aggregated.
+
+```{r}
+library(ggplot2)
+title <- sprintf(
+  "Daily average over the period %s to %s",
+  start,
+  end
+  )
+p +
+  theme_minimal() +
+  ggtitle(title)
+```
+
+### Periodicity
+
+Initially the time between observations is 15 Minutes: we can confirm this by printing out the periodictiy of the dataset.
+
+```{r}
+dgm_periodicity(df)
+```
+
+### Diurnality
+
+The `diurnality` function computes and plots the diurnality index over the year, computed as $\frac{A_d - A_n}{A_d+A_n}$ where $A_d$ and $A_n$ is the total activity during day and night, respectively. A positive diurnality index means that the animal is more active during the day than night.
+
+```{r}
+diur <- diurnality(df, activity = 'Steps')
+```
