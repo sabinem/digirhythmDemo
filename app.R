@@ -14,7 +14,7 @@ DATA_DIR <- './data/'
 ui <- fluidPage(
 
     # Application title
-    titlePanel("Periodic animal behaviour visualization with DigiRhythm"),
+    titlePanel("Monitoring animal behaviour with DigiRhythm"),
     # Drop down menu to select input file
     sidebarLayout(
       sidebarPanel(
